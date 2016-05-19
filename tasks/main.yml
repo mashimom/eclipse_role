@@ -1,0 +1,19 @@
+---
+# tasks file for eclipse
+- stat: path="{{ ansible_env.HOME }}/etc/mars"
+  register: mars_installed
+
+- apt: name=tar update_cache=yes cache_valid_time=300
+  become: yes
+
+- file: path=/tmp/eclipse state=absent
+
+- unarchive: src={{ ECLIPSE_BUNDLE }} dest=/tmp/ copy=yes
+  when: not mars_installed.stat.exists
+
+- command: "mv /tmp/eclipse {{ ansible_env.HOME }}/etc/mars"
+  when: not mars_installed.stat.exists
+
+- file: path={{ ansible_env.HOME }}/.local/share/applications state=directory
+
+- template: src=eclipse_mars.desktop.j2 dest={{ ansible_env.HOME }}/.local/share/applications/eclipse_mars.desktop force=yes
